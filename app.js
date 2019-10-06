@@ -30,8 +30,8 @@ var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 
 //路由处理 根据不同的功能划分模块
-app.use('/api',require('./controller/login'));
-
+app.use('/api/v1',require('./controller/login'));
+app.use('/api/v1',require('./controller/food'));
 
 
 var mongoose = require('mongoose');
@@ -41,7 +41,7 @@ mongoose.connect('mongodb://localhost:10003/wx-food',(erorr)=>{
     }
     else {
         console.log('数据库连接成功');
-        app.listen(8080,()=>{
+        app.listen(8666,()=>{
             console.log('访问成功')
         }); 
     }
