@@ -17,5 +17,5 @@ module.exports = new mon.Schema({
 
     createdId: String,
 
-
+    foodCommand: Boolean
 });
