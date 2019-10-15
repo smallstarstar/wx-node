@@ -2,9 +2,15 @@ var express = require('express');
 
 var router = express.Router();
 
+var jwt = require('jsonwebtoken');
+
+var KeyName = require('../config/keys');
+
+
+const passport = require('passport')
 // 引用表结构
 
-var USERINFO = require('../models/user_info')
+var USERINFO = require('../models/user_info');
 
 var messageCode = {
     messageLoginSuccess: 0, // 用户成功登陆,
@@ -19,22 +25,35 @@ var messageCode = {
 // 用户登陆
 router.post('/userInfo', (req, res, next) => {
     USERINFO.findOne({
-        userName:req.body.userName,
-        userPassword:req.body.userPassword
+        userName: req.body.userName,
+        userPassword: req.body.userPassword
     }).then((result) => {
         if (result) {
             const messageInfo = {
-                code:messageCode.messageLoginSuccess,
-                message:'用户登陆成功',
-                data:result
+                code: messageCode.messageLoginSuccess,
+                message: '用户登陆成功',
+                data: result,
             }
-            res.send(messageInfo);
+            // sign(规则，加密的名字，过期时间，箭头函数)
+            const rule = {
+                id: result._id,
+            };
+            jwt.sign(rule, KeyName.selectKey, {
+                expiresIn: 3600
+            }, (err, token) => {
+                if (err) throw err;
+                res.status(200).json({
+                    success: true,
+                    token,
+                    messageInfo
+                })
+            })
         } else {
             const messageInfo = {
                 code: messageCode.messageNotFound,
                 message: '用户不存在，请注册'
             }
-            res.send(messageInfo)
+            res.status(404).send(messageInfo);
         }
     })
 });
@@ -64,16 +83,13 @@ router.post('/register', (req, res, next) => {
             userInfoMessage.save();
             const messageInfo = {
                 code: messageCode.messageRegisterSuccess,
-                message:'用户注册成功',
+                message: '用户注册成功',
                 data: userInfoMessageuserInfoMessage
             }
-            return res.send(messageInfo);
+            return res.status(200).send(messageInfo);
         }
     })
 })
-
-
-
 
 
 

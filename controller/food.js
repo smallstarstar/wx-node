@@ -5,12 +5,18 @@ var express = require('express');
 
 var router = express.Router();
 
-// 将表引进来
-var addFood = require('../models/add_food')
-var time_sheet = require('../models/time_sheet');
-var add_Evenation = require('../models/add_evenation');
 
-router.post('/addFood', (req, res, next) => {
+const passport = require('passport')
+
+// 将表引进来
+const addFood = require('../models/add_food')
+const time_sheet = require('../models/time_sheet');
+const add_Evenation = require('../models/add_evenation');
+const addKindInfo = require('../models/add_foodkind');
+
+router.post('/addFood', passport.authenticate('jwt', {
+    session: false
+}), (req, res, next) => {
     addFood.findOne({
         foodName: req.body.foodName
     }).then((result) => {
@@ -75,12 +81,12 @@ router.post('/saveEvenation', (req, res, next) => {
     addEvenation.evenaNum = ss.evenaNum;
     addEvenation.time = ss.time;
     addEvenation.contentText = ss.contentText;
-    if(!addEvenation.evenationPeoId || !addEvenation.contentText) {
+    if (!addEvenation.evenationPeoId || !addEvenation.contentText) {
         const messageInfo = {
             state: false,
-            message: '保存失败，用户名不存在或者文本为空'
+            message: '参数错误'
         }
-        return res.json(messageInfo)
+        return res.status(400).json(messageInfo)
     } else {
         const messageInfo = {
             state: true,
@@ -128,7 +134,81 @@ router.get('/addTimeSheets', (req, res, next) => {
     });
 })
 
+/**
+ * 保存种类信息
+ */
+
+router.post('/saveKindInfo', passport.authenticate('jwt', {
+    session: false
+}), (req, res, next) => {
+    const findName = req.body.foodKindName;
+    addKindInfo.findOne({
+        foodKindName: findName
+    }).then((val) => {
+        if (val) {
+            const messageInfo = {
+                code: 1,
+                message: findName + '已经存在'
+            }
+            return res.status(404).json(messageInfo);
+        } else {
+            // 保存数据
+            const foodKindMessage = new addKindInfo();
+            foodKindMessage.foodKindName = req.body.foodKindName;
+            foodKindMessage.people = req.body.people;
+            foodKindMessage.peopleid = req.body.peopleid;
+            foodKindMessage.createdTime = req.body.createdTime;
+            foodKindMessage.save();
+            const messageInfo = {
+                code: 0,
+                state: true,
+                data: foodKindMessage
+            }
+            return res.status(200).json(messageInfo);
+        }
+    })
+});
 
 
+/**
+ *  分页获取种类信息
+ * limit
+ * skip = (page-1)*limit
+ */
+
+router.post('/getkindDataBypage', passport.authenticate('jwt', {
+    session: false
+}), (req, res, next) => {
+    const page = +req.body.page;
+    const size = +req.body.size;
+    const limit = size;
+    const skip = (page - 1) * limit;
+    addKindInfo.count().then((total) => {
+        addKindInfo.find().limit(limit).skip(skip).then((val) => {
+            const message = {
+                total: total,
+                val: val
+            }
+            return res.status(200).json(message);
+        })
+    })
+});
+
+/**
+ * 根据删除商品的种类
+ * @param{ id }
+ */
+router.delete('/deleteFoodKind',passport.authenticate('jwt',{session:false}),(req,res,next)=>{
+    const id = req.query.id;
+    addKindInfo.findByIdAndDelete({
+        _id:id
+    }).then((val)=>{
+        if(val){
+            res.status(200).send(true);
+        } else {
+            res.status(400).send(false);
+        }
+    })
+})
 
 module.exports = router;

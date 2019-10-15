@@ -2,6 +2,8 @@ var express = require('express');
 
 var app = express();
 
+const passport = require('passport');
+
 // 配置允许跨域请求；
 app.all('*', function (req, res, next) {
     res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With , yourHeaderFeild');
@@ -10,7 +12,7 @@ app.all('*', function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*"); //配置客户端 localhost与127.0.0.1是一个意思
     if (req.method == 'OPTIONS') {
         /*让options请求快速返回*/
-        res.send(200);
+        res.sendStatus(200);
     } else {
         /*防止异步造成多次响应，出现错误*/
         var _send = res.send;
@@ -27,6 +29,9 @@ app.all('*', function (req, res, next) {
 // 一定要放在路由之前，否则报错 undifinded
 var bodyParser = require('body-parser');
 
+/**
+ *  限制上传的数据大小
+ */
 app.use(bodyParser.json({
     limit: '50mb'
 }));
@@ -34,6 +39,13 @@ app.use(bodyParser.urlencoded({
     limit: '50mb',
     extended: true
 }))
+
+
+// 初始化passport
+app.use(passport.initialize());
+
+require('./config/passport')(passport)
+
 
 //路由处理 根据不同的功能划分模块
 app.use('/api/v1', require('./controller/login'));
