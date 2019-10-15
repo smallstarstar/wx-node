@@ -1,11 +1,11 @@
 var mongoose = require('mongoose');
 
 module.exports = new mongoose.Schema({
-    people:String,
+    people: String,
 
     peopleId: String,
 
     actions: String,
 
-    time:String
+    time: String
 });

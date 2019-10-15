@@ -50,7 +50,7 @@ require('./config/passport')(passport)
 //路由处理 根据不同的功能划分模块
 app.use('/api/v1', require('./controller/login'));
 app.use('/api/v1', require('./controller/food'));
-
+app.use('/api/v1', require('./controller/config'));
 
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost:10003/wx-food', (erorr) => {
