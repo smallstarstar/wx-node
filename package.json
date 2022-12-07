@@ -9,9 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.18.3",
+    "body-parser": "^1.20.1",
     "cookies": "^0.7.3",
-    "express": "^4.16.4",
+    "express": "^4.18.2",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.4.17",
     "passport": "^0.4.0",
